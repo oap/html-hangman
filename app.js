@@ -5,11 +5,27 @@ let wordList = [];
 let selectedWord = '';
 let guessedLetters = [];
 let wrongGuesses = 0;
-const maxWrongGuesses = 6; // Adjusted to 6
+const maxWrongGuesses = 6;
 let gameOver = false;
 let won = false;
 
-// Stages array now includes only the parts added after wrong guesses
+// Word lists for different languages
+const wordLists = {
+  english: ['apple', 'banana', 'cherry', 'orange', 'grape', 'strawberry', 'watermelon', 'pineapple', 'mango', 'blueberry'],
+  german: ['apfel', 'banane', 'kirsche', 'orange', 'traube', 'erdbeere', 'wassermelone', 'ananas', 'mango', 'blaubeere'],
+  greek: ['μήλο', 'μπανάνα', 'κεράσι', 'πορτοκάλι', 'σταφύλι', 'φράουλα', 'καρπούζι', 'ανανάς', 'μάνγκο', 'μύρτιλο'],
+  french: ['pomme', 'banane', 'cerise', 'orange', 'raisin', 'fraise', 'pastèque', 'ananas', 'mangue', 'myrtille'],
+};
+
+// Keyboard layouts for different languages
+const keyboardLayouts = {
+  english: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  german: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß',
+  greek: 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ',
+  french: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÂÇÉÈÊËÎÏÔÙÛÜŸ',
+};
+
+// Stages array includes only the parts added after wrong guesses
 const stages = [
   // Head
   `<circle cx="140" cy="70" r="20" stroke="black" stroke-width="4" fill="none"/>`,
@@ -22,7 +38,7 @@ const stages = [
   // Left Leg
   `<line x1="140" y1="150" x2="120" y2="190" stroke="black" stroke-width="4"/>`,
   // Right Leg
-  `<line x1="140" y1="150" x2="160" y2="190" stroke="black" stroke-width="4"/>`
+  `<line x1="140" y1="150" x2="160" y2="190" stroke="black" stroke-width="4"/>`,
 ];
 
 // Base elements drawn at game start
@@ -35,6 +51,7 @@ const baseElements = `
 `;
 
 // DOM Elements
+const languageSelect = document.getElementById('language-select');
 const screens = {
   home: document.getElementById('home-screen'),
   game: document.getElementById('game-screen'),
@@ -57,6 +74,7 @@ const wordContainer = document.getElementById('word-container');
 const keyboardContainer = document.getElementById('keyboard-container');
 const hangmanDrawing = document.getElementById('hangman-drawing');
 const resultMessage = document.getElementById('result-message');
+const messageContainer = document.getElementById('message-container'); // For non-intrusive messages
 
 // Event Listeners
 startGameBtn.addEventListener('click', startGame);
@@ -68,20 +86,27 @@ backBtn.addEventListener('click', () => showScreen('home'));
 backFromInstructionsBtn.addEventListener('click', () => showScreen('home'));
 homeBtn.addEventListener('click', () => showScreen('home'));
 playAgainBtn.addEventListener('click', startGame);
+languageSelect.addEventListener('change', (e) => {
+  selectedLanguage = e.target.value;
+  loadWordList();
+  wordListInput.value = wordList.join('\n');
+});
 
 // Initialize the game
 init();
 
 function init() {
+  selectedLanguage = languageSelect.value;
   loadWordList();
   showScreen('home');
 }
 
 function showScreen(screenName) {
-  Object.values(screens).forEach(screen => screen.classList.remove('active'));
+  Object.values(screens).forEach((screen) => screen.classList.remove('active'));
   screens[screenName].classList.add('active');
 
   if (screenName === 'wordList') {
+    languageSelect.value = selectedLanguage;
     wordListInput.value = wordList.join('\n');
   }
 
@@ -93,43 +118,59 @@ function showScreen(screenName) {
 }
 
 function loadWordList() {
-  const storedWordList = localStorage.getItem('wordList');
-  if (storedWordList) {
+  // Attempt to load the word list from localStorage for the selected language
+  const storedWordList = localStorage.getItem(`wordList_${selectedLanguage}`);
+  // If the word list has one or more words, parse the JSON string
+  if (storedWordList && JSON.parse(storedWordList).length > 0) {
     wordList = JSON.parse(storedWordList);
   } else {
-    wordList = ['example', 'hangman', 'javascript'];
-    saveWordList();
+    // Use the default word list for the selected language
+    wordList = wordLists[selectedLanguage] || [];
+    wordListInput.value = wordList.join('\n');
+    saveWordList(); // Save to localStorage
   }
 }
 
 function saveWordList() {
-  const words = wordListInput.value.split('\n').map(word => word.trim()).filter(word => word);
+  const words = wordListInput.value.split('\n').map((word) => word.trim()).filter((word) => word);
   wordList = words;
-  localStorage.setItem('wordList', JSON.stringify(wordList));
-  alert('Word list saved.');
+  localStorage.setItem(`wordList_${selectedLanguage}`, JSON.stringify(wordList));
+  // Provide user feedback without using alert
+  displayMessage('Word list saved.', 'success');
 }
 
 function resetWordList() {
   if (confirm('Are you sure you want to reset the word list?')) {
-    wordList = ['example', 'hangman', 'javascript'];
+    wordList = wordLists[selectedLanguage] || [];
     saveWordList();
     wordListInput.value = wordList.join('\n');
+    displayMessage('Word list reset to default.', 'success');
   }
 }
 
 function startGame() {
+  loadWordList(); // Load word list for the selected language
+
   if (wordList.length === 0) {
-    alert('The word list is empty. Please add some words first.');
+    // Use default word list for the selected language
+    wordList = wordLists[selectedLanguage] || [];
+    saveWordList();
+    displayMessage('The word list was empty. Using default words for the selected language.', 'info');
+  }
+
+  if (wordList.length === 0) {
+    displayMessage('The word list is empty. Please add some words first.', 'error');
     showScreen('wordList');
     return;
   }
 
   guessedLetters = [];
   wrongGuesses = 0;
-  selectedWord = wordList[Math.floor(Math.random() * wordList.length)].toLowerCase();
+  selectedWord = wordList[Math.floor(Math.random() * wordList.length)];
   localStorage.setItem('selectedWord', selectedWord);
   localStorage.setItem('guessedLetters', JSON.stringify(guessedLetters));
   localStorage.setItem('wrongGuesses', wrongGuesses);
+  localStorage.setItem('selectedLanguage', selectedLanguage);
 
   // Reset the game state flags
   gameOver = false;
@@ -145,33 +186,29 @@ function startGame() {
   createKeyboard();
 }
 
-function displayWord() {
-  wordContainer.innerHTML = '';
-  const wordArray = selectedWord.split('');
-  wordArray.forEach(letter => {
-    const letterElement = document.createElement('span');
-    letterElement.classList.add('letter');
-    if (guessedLetters.includes(letter)) {
-      letterElement.textContent = letter;
-    } else {
-      letterElement.textContent = '_';
-    }
-    wordContainer.appendChild(letterElement);
+function getUniqueLettersFromWordList() {
+  const lettersSet = new Set();
+  wordList.forEach((word) => {
+    word.split('').forEach((char) => {
+      if (char.trim() !== '') {
+        lettersSet.add(char.toLowerCase());
+      }
+    });
   });
-
-  checkWin();
+  return Array.from(lettersSet).sort((a, b) => a.localeCompare(b));
 }
 
 function createKeyboard() {
   keyboardContainer.innerHTML = '';
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+  const keyboardLayout = keyboardLayouts[selectedLanguage] || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const uniqueLetters = keyboardLayout.split('');
 
-  alphabet.split('').forEach(letter => {
+  uniqueLetters.forEach((letter) => {
     const keyButton = document.createElement('button');
     keyButton.textContent = letter;
     keyButton.classList.add('key');
-    keyButton.disabled = guessedLetters.includes(letter);
-    keyButton.addEventListener('click', () => handleGuess(letter, keyButton));
+    keyButton.disabled = guessedLetters.includes(letter.toLowerCase());
+    keyButton.addEventListener('click', () => handleGuess(letter.toLowerCase(), keyButton));
     keyboardContainer.appendChild(keyButton);
   });
 }
@@ -180,7 +217,7 @@ function handleGuess(letter, keyButton) {
   guessedLetters.push(letter);
   keyButton.disabled = true;
 
-  if (selectedWord.includes(letter)) {
+  if (selectedWord.toLowerCase().includes(letter)) {
     displayWord();
   } else {
     wrongGuesses++;
@@ -191,12 +228,31 @@ function handleGuess(letter, keyButton) {
   localStorage.setItem('wrongGuesses', wrongGuesses);
 }
 
+function displayWord() {
+  wordContainer.innerHTML = '';
+  const wordArray = selectedWord.split('');
+  wordArray.forEach((letter) => {
+    const letterElement = document.createElement('span');
+    letterElement.classList.add('letter');
+    if (guessedLetters.includes(letter.toLowerCase())) {
+      letterElement.textContent = letter;
+    } else if (letter.trim() === '') {
+      letterElement.textContent = ' ';
+    } else {
+      letterElement.textContent = '_';
+    }
+    wordContainer.appendChild(letterElement);
+  });
+
+  checkWin();
+}
+
 function drawHangman() {
   let drawingContent = baseElements; // Always include base elements
 
   if (gameOver && !won) {
     // Player lost, draw full hangman
-    stages.forEach(stage => {
+    stages.forEach((stage) => {
       drawingContent += stage;
     });
   } else {
@@ -216,7 +272,9 @@ function drawHangman() {
 
 function checkWin() {
   const wordArray = selectedWord.split('');
-  const allGuessed = wordArray.every(letter => guessedLetters.includes(letter));
+  const allGuessed = wordArray.every((letter) => {
+    return guessedLetters.includes(letter.toLowerCase()) || letter.trim() === '';
+  });
 
   if (allGuessed) {
     endGame(true);
@@ -242,12 +300,13 @@ function endGame(playerWon) {
 
   // Disable all remaining keys
   const keys = document.querySelectorAll('.key');
-  keys.forEach(key => key.disabled = true);
+  keys.forEach((key) => (key.disabled = true));
 
   // Clear saved progress
   localStorage.removeItem('selectedWord');
   localStorage.removeItem('guessedLetters');
   localStorage.removeItem('wrongGuesses');
+  localStorage.removeItem('selectedLanguage');
 }
 
 function drawFreeMan() {
@@ -274,16 +333,32 @@ function drawFreeMan() {
   hangmanDrawing.innerHTML = drawingContent;
 }
 
+// Function to display messages to the user without using alert
+function displayMessage(message, type) {
+  const messageElement = document.createElement('div');
+  messageElement.classList.add('message', type); // 'type' can be 'success', 'error', or 'info'
+  messageElement.textContent = message;
+  messageContainer.appendChild(messageElement);
+
+  // Remove the message after a few seconds
+  setTimeout(() => {
+    messageElement.remove();
+  }, 3000);
+}
+
 // Load progress from localStorage
 function loadProgress() {
   const savedWord = localStorage.getItem('selectedWord');
   const savedGuessedLetters = JSON.parse(localStorage.getItem('guessedLetters'));
   const savedWrongGuesses = parseInt(localStorage.getItem('wrongGuesses'));
+  const savedLanguage = localStorage.getItem('selectedLanguage');
 
-  if (savedWord && savedGuessedLetters && !isNaN(savedWrongGuesses)) {
+  if (savedWord && savedGuessedLetters && !isNaN(savedWrongGuesses) && savedLanguage) {
     selectedWord = savedWord;
     guessedLetters = savedGuessedLetters;
     wrongGuesses = savedWrongGuesses;
+    selectedLanguage = savedLanguage;
+    loadWordList(); // Ensure word list is loaded for the saved language
     showScreen('game');
     drawHangman();
     displayWord();

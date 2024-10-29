@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Multi-Language Hangman Game</title>
+  <title>Hangman Game</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
   <!-- Home Screen -->
   <div id="home-screen" class="screen active">
     <h1>Hangman Game</h1>
@@ -15,27 +14,32 @@
     <button id="instructions-btn">Instructions</button>
   </div>
 
-  
-    <!-- Game Screen -->
-    <div id="game-screen" class="screen">
-        <div id="hangman-container">
-        <!-- Hangman drawing will be here -->
-        <svg id="hangman-drawing" width="200" height="250"></svg>
-        </div>
-        <div id="word-container"></div>
-        <div id="keyboard-container"></div>
-        <!-- Add a result message container -->
-        <div id="result-message"></div>
-        <!-- Update buttons -->
-        <button id="play-again-btn">Play Again</button>
-        <button id="home-btn">Home</button>
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen">
+    <div id="hangman-container">
+      <svg id="hangman-drawing" width="200" height="250"></svg>
     </div>
-  
+    <div id="word-container" class="word-display"></div>
+    <div id="keyboard-container" class="keyboard"></div>
+    <div id="result-message"></div>
+    <button id="play-again-btn">Play Again</button>
+    <button id="home-btn">Home</button>
+  </div>
 
-  <!-- Word List Management Screen -->
+  <!-- Word List Editing Screen -->
   <div id="word-list-screen" class="screen">
     <h2>Edit Word List</h2>
-    <textarea id="word-list-input" rows="10" cols="30"></textarea>
+    <div id="language-selection">
+      <label for="language-select">Select Language:</label>
+      <select id="language-select">
+        <option value="english" selected>English</option>
+        <option value="german">German</option>
+        <option value="greek">Greek</option>
+        <option value="french">French</option>
+      </select>
+    </div>
+    <textarea id="word-list-input" rows="10" cols="30" placeholder="Enter one word per line"></textarea>
+    <br>
     <button id="save-word-list-btn">Save Word List</button>
     <button id="reset-word-list-btn">Reset Word List</button>
     <button id="back-btn">Back</button>
@@ -43,34 +47,24 @@
 
   <!-- Instructions Screen -->
   <div id="instructions-screen" class="screen">
-    <h2>How to Play</h2>
-    <p>Guess the word letter by letter...</p>
-    <p>input a list of words by clicking the Edit Word List button</p>
-    <p>Put a word on each line</p>
-    <p>Example word list,  French word list</p>
-    <pre>
-        apple
-        banana
-        cherry
-        apfel
-        banane
-        kirsche
-        μήλο
-        μπανάνα
-        κεράσι
-        pomme
-        banane
-        cerise
-        bonjour
-        salut
-        merci
-        au revoir
-    </pre>
-    <p>Click the Save Word List button to save the word list</p>
+    <h2>Instructions</h2>
+    <p>
+      Welcome to the Hangman Game!<br><br>
+      <strong>Objective:</strong> Guess the hidden word by selecting letters. You have a limited number of wrong guesses before the game is over.<br><br>
+      <strong>How to Play:</strong><br>
+      - Click on letters to guess them.<br>
+      - Correct guesses reveal the letters in the word.<br>
+      - Incorrect guesses add parts to the hangman drawing.<br>
+      - The game ends when you guess the word or the hangman drawing is complete.<br><br>
+      Good luck and have fun!
+    </p>
     <button id="back-from-instructions-btn">Back</button>
   </div>
 
+  <!-- Message Container (for non-intrusive messages) -->
+  <div id="message-container"></div>
 
+  <!-- Include the JavaScript file -->
   <script src="app.js"></script>
 </body>
 </html>

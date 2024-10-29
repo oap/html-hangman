@@ -8,13 +8,16 @@ body {
   .screen {
     display: none;
     padding: 20px;
-    text-align: center;
   }
   
   .screen.active {
     display: block;
   }
   
+  #game-screen {
+    text-align: center;
+  }
+
   h1, h2 {
     color: #333;
   }
