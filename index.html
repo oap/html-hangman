@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Language Hangman Game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Home Screen -->
+  <div id="home-screen" class="screen active">
+    <h1>Hangman Game</h1>
+    <button id="start-game-btn">Start Game</button>
+    <button id="edit-word-list-btn">Edit Word List</button>
+    <button id="instructions-btn">Instructions</button>
+  </div>
+
+  
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+        <div id="hangman-container">
+        <!-- Hangman drawing will be here -->
+        <svg id="hangman-drawing" width="200" height="250"></svg>
+        </div>
+        <div id="word-container"></div>
+        <div id="keyboard-container"></div>
+        <!-- Add a result message container -->
+        <div id="result-message"></div>
+        <!-- Update buttons -->
+        <button id="play-again-btn">Play Again</button>
+        <button id="home-btn">Home</button>
+    </div>
+  
+
+  <!-- Word List Management Screen -->
+  <div id="word-list-screen" class="screen">
+    <h2>Edit Word List</h2>
+    <textarea id="word-list-input" rows="10" cols="30"></textarea>
+    <button id="save-word-list-btn">Save Word List</button>
+    <button id="reset-word-list-btn">Reset Word List</button>
+    <button id="back-btn">Back</button>
+  </div>
+
+  <!-- Instructions Screen -->
+  <div id="instructions-screen" class="screen">
+    <h2>How to Play</h2>
+    <p>Guess the word letter by letter...</p>
+    <p>input a list of words by clicking the Edit Word List button</p>
+    <p>Put a word on each line</p>
+    <p>Example word list,  French word list</p>
+    <pre>
+        apple
+        banana
+        cherry
+        apfel
+        banane
+        kirsche
+        μήλο
+        μπανάνα
+        κεράσι
+        pomme
+        banane
+        cerise
+        bonjour
+        salut
+        merci
+        au revoir
+    </pre>
+    <p>Click the Save Word List button to save the word list</p>
+    <button id="back-from-instructions-btn">Back</button>
+  </div>
+
+
+  <script src="app.js"></script>
+</body>
+</html>
